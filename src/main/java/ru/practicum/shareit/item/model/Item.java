@@ -16,7 +16,7 @@ import ru.practicum.shareit.user.model.User;
 public class Item {
 
     @NotNull
-    private Long id;
+    private Integer id;
 
     @NotNull
     private String name;

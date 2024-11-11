@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
 public class ItemRequest {
 
     @NotNull
-    private Long id;
+    private Integer id;
 
     @NotNull
     private String description;

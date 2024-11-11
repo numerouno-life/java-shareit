@@ -8,6 +8,7 @@ public class ItemMapper {
 
     public static ItemDto toItemDto(Item item) {
         return new ItemDto(
+                item.getId(),
                 item.getName(),
                 item.getDescription(),
                 item.getAvailable(),
@@ -15,11 +16,12 @@ public class ItemMapper {
         );
     }
 
-    public static Item toItem(ItemDto itemDto, ItemRequest itemRequest) {
+    public static ru.practicum.shareit.item.model.Item toItem(ItemDto itemDto, ItemRequest itemRequest) {
         if (itemDto == null) {
             return null;
         }
-        return Item.builder()
+        return ru.practicum.shareit.item.model.Item.builder()
+                .id(itemDto.getId())
                 .name(itemDto.getName())
                 .description(itemDto.getDescription())
                 .available(itemDto.getAvailable())
