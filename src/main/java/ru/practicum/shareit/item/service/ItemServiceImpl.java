@@ -38,7 +38,6 @@ public class ItemServiceImpl implements ItemService {
         log.info("Изменение вещи с id {} для пользователя {}: {}", itemId, userId, itemDto);
         userService.getUserById(userId);
         getItemById(itemId);
-        getItemById(itemId);
         Item item = ItemMapper.toItem(itemDto);
         item.setId(itemId);
         item.setOwner(userId);

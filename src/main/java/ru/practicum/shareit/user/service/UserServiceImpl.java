@@ -31,7 +31,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto createUser(UserDto userDto) {
-        log.info("Создание пользователя с ID: {}", userDto.getId());
+        log.info("Создание пользователя {}", userDto);
         User user = UserMapper.toUser(userDto);
         validateUser(user);
         userStorage.createUser(user);
