@@ -23,4 +23,13 @@ public class User {
     @Email(message = "Некорректный формат email")
     @NotNull
     private String email;
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", email='" + email + '\'' +
+                '}';
+    }
 }

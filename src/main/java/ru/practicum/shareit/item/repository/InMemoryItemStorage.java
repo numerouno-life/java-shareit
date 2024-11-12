@@ -42,7 +42,6 @@ public class InMemoryItemStorage implements ItemStorage {
         optionalItemUpdate.map(Item::getName).ifPresent(item::setName);
         optionalItemUpdate.map(Item::getAvailable).ifPresent(item::setAvailable);
         optionalItemUpdate.map(Item::getDescription).ifPresent(item::setDescription);
-        optionalItemUpdate.map(Item::getRequest).ifPresent(item::setRequest); // TODO <- не уверен в этом
         items.put(item.getId(), item);
         log.info("Обновили вещь {}", updateItem);
         return item;
@@ -51,7 +50,7 @@ public class InMemoryItemStorage implements ItemStorage {
     @Override
     public List<Item> getOwnerItems(Integer userId) {
         log.info("Получение вещей пользователя {}", userId);
-        return items.values().stream().filter(item -> item.getOwner().getId().equals(userId)).toList();
+        return items.values().stream().filter(item -> item.getOwner().equals(userId)).toList();
     }
 
     @Override
@@ -62,8 +61,10 @@ public class InMemoryItemStorage implements ItemStorage {
             return new ArrayList<>();
         }
         String textToLowerCase = text.toLowerCase();
-        return items.values().stream().filter(item -> item.getAvailable() &&
-                (item.getDescription().contains(textToLowerCase)) ||
-                item.getName().contains(textToLowerCase)).toList();
+        return items.values().stream()
+                .filter(item -> item.getAvailable() &&
+                        (item.getDescription().toLowerCase().contains(textToLowerCase) ||
+                                item.getName().toLowerCase().contains(textToLowerCase)))
+                .toList();
     }
 }

@@ -27,7 +27,19 @@ public class Item {
     private Boolean available;
 
     @NotNull
-    private User owner;
+    private Integer owner;
 
     private ItemRequest request;
+
+    @Override
+    public String toString() {
+        return "Item{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                ", available=" + available +
+                ", owner=" + owner +
+                ", request=" + request +
+                '}';
+    }
 }

@@ -21,7 +21,7 @@ public class ItemController {
     private final ItemService itemService;
 
     @PostMapping
-    public ItemDto addNewItem(@RequestHeader("X-Later-User-Id") Integer userId,
+    public ItemDto addNewItem(@RequestHeader("X-Sharer-User-Id") Integer userId,
                               @Valid @RequestBody ItemDto itemDto) {
         log.info("запрос на добавление новой вещи для пользователя {}: {}", userId, itemDto);
         return itemService.addNewItem(userId, itemDto);
@@ -34,15 +34,15 @@ public class ItemController {
     }
 
     @PatchMapping("/{itemId}")
-    public ItemDto updateItem(@RequestHeader("X-Later-User-Id") Integer userId,
+    public ItemDto updateItem(@RequestHeader("X-Sharer-User-Id") Integer userId,
                               @PathVariable Integer itemId,
-                              @Valid @RequestBody ItemDto itemDto) {
+                              @RequestBody ItemDto itemDto) {
         log.info("запрос на изменение вещи с id {} для пользователя {}: {}", itemId, userId, itemDto);
         return itemService.updateItem(userId, itemId, itemDto);
     }
 
     @GetMapping
-    public List<ItemDto> getOwnerItems(@RequestHeader("X-Later-User-Id") Integer userId) {
+    public List<ItemDto> getOwnerItems(@RequestHeader("X-Sharer-User-Id") Integer userId) {
         log.info("запрос на получение всех вещей для пользователя {}", userId);
         return itemService.getOwnerItems(userId);
     }
