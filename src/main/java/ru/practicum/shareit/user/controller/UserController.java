@@ -1,6 +1,5 @@
 package ru.practicum.shareit.user.controller;
 
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -8,11 +7,9 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.service.UserService;
 
+import javax.validation.Valid;
 import java.util.List;
 
-/**
- * TODO Sprint add-controllers.
- */
 @Slf4j
 @RestController
 @RequestMapping(path = "/users")
@@ -23,30 +20,30 @@ public class UserController {
 
     @GetMapping
     public List<UserDto> getUsers() {
-        return userService.getUsers();
+        return userService.getAllUsers();
     }
 
     @GetMapping("/{userId}")
-    public UserDto getUserById(@PathVariable Integer userId) {
+    public UserDto getUserById(@PathVariable Long userId) {
         log.info("Ищем пользователя с id = {}", userId);
         return userService.getUserById(userId);
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public UserDto createUser(@Valid @RequestBody UserDto userDto) {
+    public UserDto createUser(@RequestBody @Valid UserDto userDto) {
         log.info("запрос на создание пользователя {}", userDto);
-        return userService.createUser(userDto);
+        return userService.saveUser(userDto);
     }
 
     @PatchMapping("/{userId}")
-    public UserDto updateUser(@PathVariable Integer userId, @RequestBody UserDto userDto) {
+    public UserDto updateUser(@PathVariable Long userId, @RequestBody @Valid UserDto userDto) {
         log.info("запрос на обновление пользователя {}", userDto);
-        return userService.updateUser(userId, userDto);
+        return userService.update(userId, userDto);
     }
 
     @DeleteMapping("/{userId}")
-    public UserDto deleteUser(@PathVariable Integer userId) {
-        return userService.deleteUser(userId);
+    public void deleteUser(@PathVariable Long userId) {
+        userService.delete(userId);
     }
 }

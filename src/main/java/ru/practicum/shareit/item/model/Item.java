@@ -1,28 +1,24 @@
 package ru.practicum.shareit.item.model;
 
 import jakarta.persistence.*;
-import lombok.Builder;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
-import ru.practicum.shareit.request.model.ItemRequest;
+import lombok.*;
 import ru.practicum.shareit.user.model.User;
 
-/**
- * TODO Sprint add-controllers.
- */
 @Entity
 @Table(name = "items")
 @Getter
 @Setter
 @Builder
 @EqualsAndHashCode(of = "id")
+@ToString
+@NoArgsConstructor
+@AllArgsConstructor
 public class Item {
 
     @Id
-    @Column(name = "item_id")
+    @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
     @Column(name = "name", nullable = false)
     private String name;
@@ -33,21 +29,7 @@ public class Item {
     private Boolean available;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "owner_id")
+    @JoinColumn(name = "owner_id", nullable = false)
     private User owner;
-
-    private ItemRequest request;
-
-    @Override
-    public String toString() {
-        return "Item{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", description='" + description + '\'' +
-                ", available=" + available +
-                ", owner=" + (owner != null ? owner.getId() : "null") +
-                ", request=" + request +
-                '}';
-    }
 
 }

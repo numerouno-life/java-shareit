@@ -1,10 +1,7 @@
 package ru.practicum.shareit.booking.model;
 
 import jakarta.persistence.*;
-import lombok.Builder;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.model.User;
 
@@ -14,15 +11,18 @@ import java.time.LocalDateTime;
  * TODO Sprint add-bookings.
  */
 @Entity
-@Table(name = "booking")
+@Table(name = "bookings")
 @Getter
 @Setter
 @Builder
+@ToString
 @EqualsAndHashCode(of = "id")
+@NoArgsConstructor
+@AllArgsConstructor
 public class Booking {
 
     @Id
-    @Column(name = "booking_id")
+    @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
@@ -47,15 +47,4 @@ public class Booking {
         WAITING, APPROVED, REJECTED, CANCELED
     }
 
-    @Override
-    public String toString() {
-        return "Booking{" +
-                "id=" + id +
-                ", start=" + start +
-                ", end=" + end +
-                ", item=" + (item != null ? item.getId() : "null") +
-                ", booker=" + (booker != null ? booker.getId() : "null") +
-                ", status=" + status +
-                '}';
-    }
 }

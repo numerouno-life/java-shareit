@@ -1,10 +1,7 @@
 package ru.practicum.shareit.item.model;
 
 import jakarta.persistence.*;
-import lombok.Builder;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import ru.practicum.shareit.user.model.User;
 
 import java.time.LocalDateTime;
@@ -14,11 +11,15 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @EqualsAndHashCode(of = "id")
+@ToString
+@AllArgsConstructor
+@NoArgsConstructor
 @Builder
 public class Comment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -31,17 +32,7 @@ public class Comment {
 
     private String text;
 
-    @Column(name = "created_at")
-    private LocalDateTime createdAt;
+    @Column(name = "created", nullable = false)
+    private LocalDateTime created;
 
-    @Override
-    public String toString() {
-        return "Comment{" +
-                "id=" + id +
-                ", item=" + (item != null ? item.getId() : "null") +
-                ", author=" + (author != null ? author.getId() : "null") +
-                ", text='" + text + '\'' +
-                ", createdAt=" + createdAt +
-                '}';
-    }
 }
