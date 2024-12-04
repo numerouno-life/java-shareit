@@ -15,9 +15,8 @@ import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
-import ru.practicum.shareit.user.mapper.UserMapper;
 import ru.practicum.shareit.user.model.User;
-import ru.practicum.shareit.user.service.UserService;
+import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.time.LocalDateTime;
 import java.util.Comparator;
@@ -30,20 +29,20 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class BookingServiceImpl implements BookingService {
     private final BookingRepository bookingRepository;
-    private final UserService userService;
     private final ItemRepository itemRepository;
+    private final UserRepository userRepository;
 
     @Override
     @Transactional
     public BookingDtoOut addNewBooking(Long userId, BookingDtoIn bookingDtoIn) {
         log.info("Добавление нового бронирования");
-        User user = findUserById(userId);
-        Item item = findItemById(bookingDtoIn.getItemId());
-        if (Boolean.FALSE.equals(item.getAvailable())) {
-            throw new ValidationException("Вещь не доступна для бронированя");
-        }
         if (bookingDtoIn.getStart() == bookingDtoIn.getEnd()) {
             throw new ValidationException("Дата начала и конца бронирования должны быть разными");
+        }
+        User user = findUserById(userId);
+        Item item = findItemById(bookingDtoIn.getItemId());
+        if (!item.getAvailable()) {
+            throw new ValidationException("Вещь не доступна для бронированя");
         }
 
         return BookingMapper.toBookingDtoOut(bookingRepository.save(
@@ -129,7 +128,8 @@ public class BookingServiceImpl implements BookingService {
     }
 
     private User findUserById(Long userId) {
-        return UserMapper.toUser(userService.getUserById(userId));
+        return userRepository.findById(userId).orElseThrow(
+                () -> new NotFoundException("Пользователь с ID:" + userId + " не найден"));
     }
 
     private Item findItemById(Long itemId) {

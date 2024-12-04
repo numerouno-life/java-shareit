@@ -20,10 +20,8 @@ import ru.practicum.shareit.item.mapper.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.CommentRepository;
 import ru.practicum.shareit.item.repository.ItemRepository;
-import ru.practicum.shareit.user.mapper.UserMapper;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
-import ru.practicum.shareit.user.service.UserService;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -40,7 +38,6 @@ import static org.springframework.data.domain.Sort.Direction.DESC;
 public class ItemServiceImpl implements ItemService {
     private static final LocalDateTime NOW = LocalDateTime.now();
     private final ItemRepository itemRepository;
-    private final UserService userService;
     private final CommentRepository commentRepository;
     private final BookingRepository bookingRepository;
     private final UserRepository userRepository;
@@ -134,12 +131,13 @@ public class ItemServiceImpl implements ItemService {
             return CommentMapper.toCommentDtoOut(commentRepository.save(
                     CommentMapper.toComment(commentDtoIn, booking.getItem(), booking.getBooker())));
         } catch (Exception e) {
-            throw new ValidationException("Бронь не найдена");
+            throw new ValidationException("Бронь для вещи с ID: " + itemId + " не найдена");
         }
     }
 
     private User findUserById(Long userId) {
-        return UserMapper.toUser(userService.getUserById(userId));
+        return userRepository.findById(userId).orElseThrow(
+                () -> new NotFoundException("Пользователь с ID " + userId + " не найден"));
     }
 
     private Item findItemById(Long itemId) {
