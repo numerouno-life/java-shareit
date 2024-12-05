@@ -1,30 +1,28 @@
 package ru.practicum.shareit.user.dto;
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+
+
 @Getter
 @Setter
 @Builder
-@AllArgsConstructor
 public class UserDto {
-    private Integer id;
-    @NotNull
+
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private Long id;
+
+    @NotBlank(message = "Имя не может быть пустым")
     private String name;
-    @NotNull
-    @Email
+
+    @NotNull(message = "email должен быть задан")
+    @Email(message = "Неверный формат email")
     private String email;
 
-    @Override
-    public String toString() {
-        return "UserDto{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", email='" + email + '\'' +
-                '}';
-    }
 }
