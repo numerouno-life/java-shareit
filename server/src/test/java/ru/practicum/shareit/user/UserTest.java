@@ -11,7 +11,7 @@ import ru.practicum.shareit.user.repository.UserRepository;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
-class UserEntityTest {
+class UserTest {
 
     @Autowired
     private UserRepository userRepository;
@@ -60,6 +60,6 @@ class UserEntityTest {
         User savedUser = userRepository.save(user);
         userRepository.deleteById(savedUser.getId());
         assertThat(userRepository.findById(savedUser.getId())).isEmpty();
-        
+
     }
 }
