@@ -16,7 +16,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-
 class BookingClientTest {
     private BookingClient bookingClient;
     private RestTemplate restTemplate;
@@ -29,7 +28,6 @@ class BookingClientTest {
         when(restTemplateBuilder.uriTemplateHandler(any())).thenReturn(restTemplateBuilder);
         when(restTemplateBuilder.requestFactory(any(Supplier.class))).thenReturn(restTemplateBuilder);
         when(restTemplateBuilder.build()).thenReturn(restTemplate);
-
 
         bookingClient = new BookingClient("http://localhost:8080", restTemplateBuilder);
     }
@@ -58,4 +56,71 @@ class BookingClientTest {
                 eq(HttpMethod.GET), any(), eq(Object.class), any(Map.class));
     }
 
+
+    @Test
+    void shouldApproveBooking() {
+        long userId = 1L;
+        long bookingId = 2L;
+        boolean isApproved = true;
+
+        ResponseEntity<Object> expectedResponse = ResponseEntity.ok("Success");
+
+        when(restTemplate.exchange(
+                anyString(),
+                eq(HttpMethod.PATCH),
+                any(),
+                eq(Object.class),
+                anyMap()
+        )).thenReturn(expectedResponse);
+
+        ResponseEntity<Object> response = bookingClient.approveBooking(userId, bookingId, isApproved);
+
+        assertEquals(expectedResponse, response);
+        verify(restTemplate, times(1)).exchange(anyString(),
+                eq(HttpMethod.PATCH), any(), eq(Object.class), anyMap());
+    }
+
+    @Test
+    void shouldGetAllUserBookings() {
+        long userId = 1L;
+        State state = State.ALL;
+
+        ResponseEntity<Object> expectedResponse = ResponseEntity.ok("Success");
+
+        when(restTemplate.exchange(
+                anyString(),
+                eq(HttpMethod.GET),
+                any(),
+                eq(Object.class),
+                anyMap()
+        )).thenReturn(expectedResponse);
+
+        ResponseEntity<Object> response = bookingClient.getAllUserBooking(userId, state);
+
+        assertEquals(expectedResponse, response);
+        verify(restTemplate, times(1)).exchange(anyString(),
+                eq(HttpMethod.GET), any(), eq(Object.class), anyMap());
+    }
+
+    @Test
+    void shouldGetAllOwnerBookings() {
+        long ownerId = 1L;
+        State state = State.ALL;
+
+        ResponseEntity<Object> expectedResponse = ResponseEntity.ok("Success");
+
+        when(restTemplate.exchange(
+                anyString(),
+                eq(HttpMethod.GET),
+                any(),
+                eq(Object.class),
+                anyMap()
+        )).thenReturn(expectedResponse);
+
+        ResponseEntity<Object> response = bookingClient.getAllOwnerBooking(ownerId, state);
+
+        assertEquals(expectedResponse, response);
+        verify(restTemplate, times(1)).exchange(anyString(),
+                eq(HttpMethod.GET), any(), eq(Object.class), anyMap());
+    }
 }

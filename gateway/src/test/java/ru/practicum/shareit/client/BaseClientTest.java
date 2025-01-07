@@ -192,5 +192,79 @@ public class BaseClientTest {
         assertEquals("Success", result.getBody());
     }
 
-    
+    @Test
+    void shouldSendPatchRequestWithHeaders() {
+        String url = "/test-path";
+        Long userId = 1L;
+        ResponseEntity<Object> response = ResponseEntity.ok("Success");
+        when(restTemplate.exchange(
+                eq(url),
+                eq(HttpMethod.PATCH),
+                any(),
+                eq(Object.class)))
+                .thenReturn(response);
+
+        ResponseEntity<Object> result = baseClient.patch(url, userId, new Object());
+
+        assertEquals(response, result);
+        verify(restTemplate, times(1)).exchange(eq(url), eq(HttpMethod.PATCH), any(), eq(Object.class));
+    }
+
+    @Test
+    void shouldSendDeleteRequestWithoutUserId() {
+        String url = "/test-path";
+        ResponseEntity<Object> response = ResponseEntity.ok("Success");
+        when(restTemplate.exchange(
+                eq(url),
+                eq(HttpMethod.DELETE),
+                any(),
+                eq(Object.class)))
+                .thenReturn(response);
+
+        ResponseEntity<Object> result = baseClient.delete(url);
+
+        assertEquals(response, result);
+        verify(restTemplate, times(1))
+                .exchange(eq(url), eq(HttpMethod.DELETE), any(), eq(Object.class));
+    }
+
+    @Test
+    void shouldHandleHttpStatusCodeExceptionInPatch() {
+        String url = "/test-path";
+        Long userId = 1L;
+        HttpStatusCodeException exception = mock(HttpStatusCodeException.class);
+        when(exception.getStatusCode()).thenReturn(HttpStatus.BAD_REQUEST);
+        when(restTemplate.exchange(
+                eq(url),
+                eq(HttpMethod.PATCH),
+                any(),
+                eq(Object.class)))
+                .thenThrow(exception);
+
+        ResponseEntity<Object> result = baseClient.patch(url, userId, new Object());
+
+        assertEquals(400, result.getStatusCodeValue());
+        verify(restTemplate, times(1))
+                .exchange(eq(url), eq(HttpMethod.PATCH), any(), eq(Object.class));
+    }
+
+    @Test
+    void shouldHandleNullUserIdInHeaders() {
+        String url = "/test-path";
+        ResponseEntity<Object> response = ResponseEntity.ok("Success");
+        when(restTemplate.exchange(
+                eq(url),
+                eq(HttpMethod.GET),
+                any(),
+                eq(Object.class)))
+                .thenReturn(response);
+
+        ResponseEntity<Object> result = baseClient.get(url, 1L);
+
+        assertEquals(response, result);
+        verify(restTemplate, times(1)).exchange(eq(url),
+                eq(HttpMethod.GET), any(), eq(Object.class));
+    }
+
+
 }
