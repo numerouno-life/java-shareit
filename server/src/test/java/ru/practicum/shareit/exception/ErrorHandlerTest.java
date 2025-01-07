@@ -40,5 +40,26 @@ public class ErrorHandlerTest {
         assertEquals("Произошла ошибка на стороне сервера", response.getError());
     }
 
+    @Test
+    void handleConflict_shouldReturnConflictErrorResponse() {
+        ConflictException e = new ConflictException("Conflict occurred");
+        ErrorResponse response = errorHandler.handleConflict(e);
+        assertEquals("Conflict occurred", response.getError());
+    }
+
+    @Test
+    void handleAuthorizationException_shouldReturnForbiddenErrorResponse() {
+        AuthorizationException e = new AuthorizationException("Access denied");
+        ErrorResponse response = errorHandler.handleAuthorizationException(e);
+        assertEquals("Access denied", response.getError());
+    }
+
+    @Test
+    void internalServer_shouldReturnInternalServerErrorResponse() {
+        InternalServerException e = new InternalServerException("Server error");
+        ErrorResponse response = errorHandler.internalServer(e);
+        assertEquals("Server error", response.getError());
+    }
+
 
 }

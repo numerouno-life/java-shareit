@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class ErrorHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ErrorResponse handle(final Exception e) {
+    public ErrorResponse handleInternalServerExceptions(final Exception e) {
         log.warn(e.getMessage());
         return new ErrorResponse("Произошла ошибка на стороне сервера");
     }

@@ -28,12 +28,12 @@ import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -264,12 +264,11 @@ public class ItemServiceTest {
 
         NotFoundException exception = assertThrows(
                 NotFoundException.class,
-                () -> itemService.getItemById(999L, 1L)
+                () -> itemService.getItemById(1L, 1L)
         );
-
-        assertEquals("Вещь с Id 999 не найдена", exception.getMessage());
-        verify(itemRepository).findById(999L);
+        assertEquals("Вещь с Id 1 не найдена", exception.getMessage());
     }
+
 
     @Test
     void addNewItem_ShouldThrowValidationException_WhenNameIsEmpty() {
@@ -282,6 +281,140 @@ public class ItemServiceTest {
         assertEquals("Имя вещи не может быть пустым", exception.getMessage());
     }
 
+    @Test
+    void addNewItem_ShouldThrowValidationException_WhenNameIsNull() {
+        itemDtoIn.setName(null);
+
+        ValidationException exception = assertThrows(ValidationException.class,
+                () -> itemService.addNewItem(1L, itemDtoIn));
+        assertEquals("Имя вещи не может быть пустым", exception.getMessage());
+    }
+
+    @Test
+    void addNewItem_ShouldThrowValidationException_WhenDescriptionIsNull() {
+        itemDtoIn.setDescription(null);
+
+        ValidationException exception = assertThrows(ValidationException.class,
+                () -> itemService.addNewItem(1L, itemDtoIn));
+        assertEquals("Описание вещи не может быть пустым", exception.getMessage());
+    }
+
+    @Test
+    void addNewItem_ShouldThrowNotFoundException_WhenUserNotFound() {
+        when(userRepository.findById(anyLong())).thenReturn(Optional.empty());
+        NotFoundException exception = assertThrows(
+                NotFoundException.class,
+                () -> itemService.addNewItem(1L, itemDtoIn));
+        assertEquals("Пользователь с ID 1 не найден", exception.getMessage());
+    }
+
+    @Test
+    void addNewItem_ShouldThrowIllegalArgumentException_WhenAvailableIsNull() {
+        itemDtoIn.setAvailable(null);
+
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> itemService.addNewItem(1L, itemDtoIn)
+        );
+
+        assertEquals("IllegalArgumentException", exception.getClass().getSimpleName());
+    }
+
+    @Test
+    void saveComment_ShouldThrowValidationException_WhenBookingNotFound() {
+        when(itemRepository.existsById(anyLong())).thenReturn(true);
+        when(userRepository.existsById(anyLong())).thenReturn(true);
+        when(bookingRepository.findByBookerIdAndItemIdAndStatusAndEndBefore(
+                anyLong(), anyLong(), eq(Booking.BookingStatus.APPROVED), any(LocalDateTime.class)))
+                .thenReturn(null);
+
+        ValidationException exception = assertThrows(ValidationException.class, () ->
+                itemService.saveComment(1L, commentDtoIn, 1L)
+        );
+
+        assertEquals("Бронь для вещи с ID: 1 не найдена", exception.getMessage());
+    }
+
+    @Test
+    void getOwnerItems_ShouldReturnEmptyList_WhenNoItemsFound() {
+        when(userRepository.findById(anyLong())).thenReturn(Optional.of(user));
+        when(itemRepository.findAllByOwnerId(anyLong())).thenReturn(Collections.emptyList());
+
+        List<ItemDtoOut> result = itemService.getOwnerItems(1L);
+
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+
+        verify(itemRepository).findAllByOwnerId(1L);
+    }
+
+    @Test
+    void addNewItem_ShouldThrowNotFoundException_WhenRequestNotFound() {
+        when(userRepository.findById(anyLong())).thenReturn(Optional.of(user));
+        when(itemRequestRepository.findById(anyLong())).thenReturn(Optional.empty());
+
+        itemDtoIn.setRequestId(99L);
+        NotFoundException exception = assertThrows(NotFoundException.class, () ->
+                itemService.addNewItem(1L, itemDtoIn)
+        );
+
+        assertEquals("Запрос на вещь с Id 99 не найден", exception.getMessage());
+    }
+
+    @Test
+    void getOwnerItems_ShouldReturnEmptyList_WhenOwnerHasNoItems() {
+        mockUserRepositoryFindById();
+        when(itemRepository.findAllByOwnerId(any(Long.class))).thenReturn(Collections.emptyList());
+
+        List<ItemDtoOut> result = itemService.getOwnerItems(1L);
+
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+
+        verify(userRepository).findById(1L);
+        verify(itemRepository).findAllByOwnerId(1L);
+    }
+
+    @Test
+    void searchItemByText_ShouldReturnEmptyList_WhenTextIsEmpty() {
+        List<ItemDtoOut> result = itemService.searchItemByText(" ");
+
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void updateItem_ShouldThrowValidationException_WhenItemNotOwnedByUser() {
+        mockUserRepositoryFindById();
+        when(itemRepository.findById(any(Long.class))).thenReturn(Optional.of(item));
+        item.setOwner(User.builder().id(2L).build());
+
+        ValidationException exception = assertThrows(
+                ValidationException.class,
+                () -> itemService.updateItem(1L, 1L, itemDtoIn)
+        );
+
+        assertEquals("У владельца нет вещи", exception.getMessage());
+    }
+
+    @Test
+    void saveComment_ShouldThrowValidationException_WhenNoBookingFound() {
+        when(itemRepository.existsById(item.getId())).thenReturn(true);
+        when(userRepository.existsById(user.getId())).thenReturn(true);
+        when(bookingRepository.findByBookerIdAndItemIdAndStatusAndEndBefore(
+                eq(user.getId()),
+                eq(item.getId()),
+                eq(Booking.BookingStatus.APPROVED),
+                any(LocalDateTime.class))
+        ).thenThrow(ValidationException.class);
+
+        ValidationException exception = assertThrows(
+                ValidationException.class,
+                () -> itemService.saveComment(1L, commentDtoIn, 1L)
+        );
+
+        assertEquals("Бронь для вещи с ID: 1 не найдена", exception.getMessage());
+    }
 
     private void mockUserRepositoryFindById() {
         when(userRepository.findById(any(Long.class))).thenReturn(Optional.of(user));

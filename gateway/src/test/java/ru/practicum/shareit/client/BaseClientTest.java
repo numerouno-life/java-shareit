@@ -8,6 +8,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.Map;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -114,4 +116,81 @@ public class BaseClientTest {
         assertEquals(400, result.getStatusCodeValue());
         verify(restTemplate, times(1)).exchange(eq(url), eq(HttpMethod.GET), any(), eq(Object.class));
     }
+
+    @Test
+    void shouldSendGetRequestWithParameters() {
+        String url = "/test-path";
+        Long userId = 1L;
+        Map<String, Object> parameters = Map.of("key", "value");
+        ResponseEntity<Object> response = ResponseEntity.ok("Success");
+        when(restTemplate.exchange(
+                eq(url),
+                eq(HttpMethod.GET),
+                any(),
+                eq(Object.class),
+                eq(parameters)))
+                .thenReturn(response);
+
+        ResponseEntity<Object> result = baseClient.get(url, userId, parameters);
+
+        assertEquals(response, result);
+        verify(restTemplate, times(1))
+                .exchange(eq(url), eq(HttpMethod.GET), any(), eq(Object.class), eq(parameters));
+    }
+
+    @Test
+    void shouldCreateHeadersWithoutUserId() {
+        String url = "/test-path";
+        ResponseEntity<Object> response = ResponseEntity.ok("Success");
+        when(restTemplate.exchange(
+                eq(url),
+                eq(HttpMethod.GET),
+                any(),
+                eq(Object.class)))
+                .thenReturn(response);
+
+        ResponseEntity<Object> result = baseClient.get(url);
+
+        assertEquals(response, result);
+        verify(restTemplate, times(1))
+                .exchange(eq(url), eq(HttpMethod.GET), any(), eq(Object.class));
+    }
+
+    @Test
+    void shouldHandleResponseWithoutBody() {
+        String url = "/test-path";
+        Long userId = 1L;
+        ResponseEntity<Object> response = ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+        when(restTemplate.exchange(
+                eq(url),
+                eq(HttpMethod.GET),
+                any(),
+                eq(Object.class)))
+                .thenReturn(response);
+
+        ResponseEntity<Object> result = baseClient.get(url, userId);
+
+        assertEquals(HttpStatus.NO_CONTENT, result.getStatusCode());
+        assertEquals(null, result.getBody());
+    }
+
+    @Test
+    void shouldHandleResponseWithBody() {
+        String url = "/test-path";
+        Long userId = 1L;
+        ResponseEntity<Object> response = ResponseEntity.status(HttpStatus.OK).body("Success");
+        when(restTemplate.exchange(
+                eq(url),
+                eq(HttpMethod.GET),
+                any(),
+                eq(Object.class)))
+                .thenReturn(response);
+
+        ResponseEntity<Object> result = baseClient.get(url, userId);
+
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertEquals("Success", result.getBody());
+    }
+
+    
 }
