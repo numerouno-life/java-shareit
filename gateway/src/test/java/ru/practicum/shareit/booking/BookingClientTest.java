@@ -7,6 +7,7 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
+import ru.practicum.shareit.booking.dto.BookItemRequestDto;
 import ru.practicum.shareit.booking.dto.State;
 
 import java.util.Map;
@@ -122,5 +123,47 @@ class BookingClientTest {
         assertEquals(expectedResponse, response);
         verify(restTemplate, times(1)).exchange(anyString(),
                 eq(HttpMethod.GET), any(), eq(Object.class), anyMap());
+    }
+
+    @Test
+    void shouldGetBookingById() {
+        long userId = 1L;
+        long bookingId = 2L;
+
+        ResponseEntity<Object> expectedResponse = ResponseEntity.ok("Success");
+
+        when(restTemplate.exchange(
+                anyString(),
+                eq(HttpMethod.GET),
+                any(),
+                eq(Object.class)
+        )).thenReturn(expectedResponse);
+
+        ResponseEntity<Object> response = bookingClient.getBookingById(bookingId, userId);
+
+        assertEquals(expectedResponse, response);
+        verify(restTemplate, times(1)).exchange(anyString(),
+                eq(HttpMethod.GET), any(), eq(Object.class));
+    }
+
+    @Test
+    void shouldAddNewBooking() {
+        long userId = 1L;
+        BookItemRequestDto bookItemRequestDto = new BookItemRequestDto();
+
+        ResponseEntity<Object> expectedResponse = ResponseEntity.ok("Success");
+
+        when(restTemplate.exchange(
+                anyString(),
+                eq(HttpMethod.POST),
+                any(),
+                eq(Object.class)
+        )).thenReturn(expectedResponse);
+
+        ResponseEntity<Object> response = bookingClient.addNewBooking(userId, bookItemRequestDto);
+
+        assertEquals(expectedResponse, response);
+        verify(restTemplate, times(1)).exchange(anyString(),
+                eq(HttpMethod.POST), any(), eq(Object.class));
     }
 }

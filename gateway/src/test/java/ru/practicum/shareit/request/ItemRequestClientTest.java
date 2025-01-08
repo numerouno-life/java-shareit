@@ -8,13 +8,13 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
+import ru.practicum.shareit.request.dto.ItemRequestDtoRequest;
 
 import java.util.Map;
 import java.util.function.Supplier;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 public class ItemRequestClientTest {
@@ -33,7 +33,46 @@ public class ItemRequestClientTest {
         when(restTemplateBuilder.requestFactory(any(Supplier.class))).thenReturn(restTemplateBuilder);
         when(restTemplateBuilder.build()).thenReturn(restTemplate);
 
-        itemRequestClient = new ItemRequestClient("http://localhost:8080", restTemplateBuilder);
+        itemRequestClient = new ItemRequestClient(serverUrl, restTemplateBuilder);
+    }
+
+    @Test
+    void shouldAddNewRequest() {
+        Long userId = 1L;
+        ItemRequestDtoRequest requestDto = new ItemRequestDtoRequest();
+        ResponseEntity<Object> expectedResponse = ResponseEntity.ok("Success");
+
+        when(restTemplate.exchange(
+                anyString(),
+                eq(HttpMethod.POST),
+                any(),
+                eq(Object.class)
+        )).thenReturn(expectedResponse);
+
+        ResponseEntity<Object> response = itemRequestClient.addNewRequest(userId, requestDto);
+
+        assertEquals(expectedResponse, response);
+        verify(restTemplate, times(1)).exchange(anyString(),
+                eq(HttpMethod.POST), any(), eq(Object.class));
+    }
+
+    @Test
+    void shouldGetOwnerRequests() {
+        Long userId = 1L;
+        ResponseEntity<Object> expectedResponse = ResponseEntity.ok("Success");
+
+        when(restTemplate.exchange(
+                anyString(),
+                eq(HttpMethod.GET),
+                any(),
+                eq(Object.class)
+        )).thenReturn(expectedResponse);
+
+        ResponseEntity<Object> response = itemRequestClient.getOwnerRequests(userId);
+
+        assertEquals(expectedResponse, response);
+        verify(restTemplate, times(1)).exchange(anyString(),
+                eq(HttpMethod.GET), any(), eq(Object.class));
     }
 
     @Test
@@ -79,5 +118,4 @@ public class ItemRequestClientTest {
         verify(restTemplate, times(1)).exchange(anyString(),
                 eq(HttpMethod.GET), any(), eq(Object.class));
     }
-
 }

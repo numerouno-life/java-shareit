@@ -5,12 +5,14 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
@@ -264,6 +266,82 @@ public class BaseClientTest {
         assertEquals(response, result);
         verify(restTemplate, times(1)).exchange(eq(url),
                 eq(HttpMethod.GET), any(), eq(Object.class));
+    }
+
+    @Test
+    void shouldHandleNullParametersInGet() {
+        String url = "/test-path";
+        Long userId = 1L;
+        ResponseEntity<Object> response = ResponseEntity.ok("Success");
+        when(restTemplate.exchange(
+                eq(url),
+                eq(HttpMethod.GET),
+                any(),
+                eq(Object.class)))
+                .thenReturn(response);
+
+        ResponseEntity<Object> result = baseClient.get(url, userId, null);
+
+        assertEquals(response, result);
+        verify(restTemplate, times(1)).exchange(eq(url), eq(HttpMethod.GET), any(), eq(Object.class));
+    }
+
+    @Test
+    void shouldHandleComplexParametersInGet() {
+        String url = "/test-path";
+        Long userId = 1L;
+        Map<String, Object> parameters = Map.of("key", Map.of("nestedKey", "nestedValue"));
+        ResponseEntity<Object> response = ResponseEntity.ok("Success");
+        when(restTemplate.exchange(
+                eq(url),
+                eq(HttpMethod.GET),
+                any(),
+                eq(Object.class),
+                eq(parameters)))
+                .thenReturn(response);
+
+        ResponseEntity<Object> result = baseClient.get(url, userId, parameters);
+
+        assertEquals(response, result);
+        verify(restTemplate, times(1))
+                .exchange(eq(url), eq(HttpMethod.GET), any(), eq(Object.class), eq(parameters));
+    }
+
+    @Test
+    void shouldHandleRestClientException() {
+        String url = "/test-path";
+        Long userId = 1L;
+        when(restTemplate.exchange(
+                eq(url),
+                eq(HttpMethod.GET),
+                any(),
+                eq(Object.class)))
+                .thenThrow(new RuntimeException("Unexpected error"));
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> baseClient.get(url, userId));
+
+        assertEquals("Unexpected error", exception.getMessage());
+        verify(restTemplate, times(1)).exchange(eq(url), eq(HttpMethod.GET), any(), eq(Object.class));
+    }
+
+    @Test
+    void shouldHandleHttpServerErrorException() {
+        String url = "/test-path";
+        Long userId = 1L;
+        String errorMessage = "Server error";
+        HttpServerErrorException exception = new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR, "Server error");
+        when(restTemplate.exchange(
+                eq(url),
+                eq(HttpMethod.GET),
+                any(),
+                eq(Object.class)))
+                .thenThrow(exception);
+
+        ResponseEntity<Object> result = baseClient.get(url, userId);
+
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, result.getStatusCode());
+        assertEquals(errorMessage, exception.getStatusText());
+        verify(restTemplate, times(1)).exchange(eq(url), eq(HttpMethod.GET), any(), eq(Object.class));
     }
 
 
