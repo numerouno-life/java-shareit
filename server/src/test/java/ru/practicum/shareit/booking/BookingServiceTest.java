@@ -16,6 +16,7 @@ import ru.practicum.shareit.booking.model.State;
 import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.booking.service.BookingServiceImpl;
 import ru.practicum.shareit.exception.AuthorizationException;
+import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
@@ -419,6 +420,41 @@ public class BookingServiceTest {
                 () -> bookingService.getAllOwnerBooking(user.getId(), State.INVALID));
 
         assertEquals("Неизвестное состояние: INVALID", exception.getMessage());
+    }
+
+    @Test
+    void addNewBooking_ShouldThrowValidationException_WhenStartAndEndDatesAreEqual() {
+        bookingDtoIn.setStart(LocalDateTime.now());
+        bookingDtoIn.setEnd(LocalDateTime.now());
+
+        Exception exception = assertThrows(NotFoundException.class,
+                () -> bookingService.addNewBooking(user.getId(), bookingDtoIn));
+
+        assertEquals("Вещь с Id 1 не найдена", exception.getMessage());
+    }
+
+
+    @Test
+    void addNewBooking_ShouldThrowValidationException_WhenItemIsNotAvailable() {
+        item.setAvailable(false);
+        mockItemRepositoryFindById();
+
+        ValidationException exception = assertThrows(ValidationException.class,
+                () -> bookingService.addNewBooking(user.getId(), bookingDtoIn));
+
+        assertEquals("Вещь не доступна для бронированя", exception.getMessage());
+    }
+
+    @Test
+    void approveBooking_ShouldThrowAuthorizationException_WhenUserIsNotOwner() {
+        User anotherUser = User.builder().id(2L).build();
+        item.setOwner(anotherUser);
+        mockBookingRepositoryFindById();
+
+        AuthorizationException exception = assertThrows(AuthorizationException.class,
+                () -> bookingService.approveBooking(user.getId(), booking.getId(), true));
+
+        assertEquals("Изменять бронирования может только собственник вещи", exception.getMessage());
     }
 
     private void mockUserRepositoryFindById() {

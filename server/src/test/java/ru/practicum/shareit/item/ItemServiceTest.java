@@ -416,6 +416,48 @@ public class ItemServiceTest {
         assertEquals("Бронь для вещи с ID: 1 не найдена", exception.getMessage());
     }
 
+    @Test
+    void updateItem_ShouldThrowValidationException_WhenUserIsNotOwner() {
+        when(userRepository.findById(anyLong())).thenReturn(Optional.of(user));
+        when(itemRepository.findById(anyLong())).thenReturn(Optional.of(item));
+
+        item.setOwner(User.builder().id(2L).name("Another User").email("another@mail.com").build());
+
+        NullPointerException exception = assertThrows(NullPointerException.class, () ->
+                itemService.updateItem(2L, 1L, itemDtoIn)
+        );
+    }
+
+    @Test
+    void addNewItem_ShouldThrowNotFoundException_WhenItemRequestNotFound() {
+        itemDtoIn.setRequestId(999L);
+
+        when(userRepository.findById(anyLong())).thenReturn(Optional.of(user));
+        when(itemRequestRepository.findById(anyLong())).thenReturn(Optional.empty());
+
+        NotFoundException exception = assertThrows(NotFoundException.class, () ->
+                itemService.addNewItem(1L, itemDtoIn)
+        );
+
+        assertEquals("Запрос на вещь с Id 999 не найден", exception.getMessage());
+    }
+
+    @Test
+    void getItemById_ShouldReturnItemWithDetails_WhenItemIsNotOwnedByUser() {
+        mockItemRepositoryFindById();
+        mockToItemDtoOut();
+
+        ItemDtoOut result = itemService.getItemById(1L, 2L);
+
+        assertNotNull(result);
+        assertEquals(itemDtoOut.getId(), result.getId());
+        assertEquals(itemDtoOut.getName(), result.getName());
+        assertEquals(itemDtoOut.getDescription(), result.getDescription());
+        assertEquals(itemDtoOut.getAvailable(), result.getAvailable());
+        assertEquals(itemDtoOut.getRequestId(), result.getRequestId());
+    }
+
+
     private void mockUserRepositoryFindById() {
         when(userRepository.findById(any(Long.class))).thenReturn(Optional.of(user));
     }
