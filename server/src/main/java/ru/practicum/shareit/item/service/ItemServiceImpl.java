@@ -199,6 +199,4 @@ public class ItemServiceImpl implements ItemService {
                 .map(commentMapper::toCommentDtoOut)
                 .toList();
     }
-
-
 }

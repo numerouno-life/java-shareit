@@ -2,7 +2,6 @@ package ru.practicum.shareit.exception;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -32,13 +31,6 @@ public class ErrorHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Map<String, String> handleMissingRequestHeaderException(MissingRequestHeaderException ex) {
         return Map.of("error", "Отсутствует обязательный заголовок: " + ex.getHeaderName());
-    }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleValidation(final MethodArgumentNotValidException e) {
-        log.warn(e.getMessage());
-        return new ErrorResponse(e.getMessage());
     }
 
     @ExceptionHandler

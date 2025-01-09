@@ -12,10 +12,11 @@ import org.springframework.test.web.servlet.MockMvc;
 import ru.practicum.shareit.item.dto.CommentDtoRequest;
 import ru.practicum.shareit.item.dto.ItemDtoRequest;
 
+import java.nio.charset.StandardCharsets;
+
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -118,5 +119,36 @@ public class ItemGatewayControllerTest {
         verify(itemClient, times(1)).saveComment(eq(1L), eq(commentDtoRequest), eq(1L));
     }
 
+    @Test
+    void testReturnBadRequestIfTryCreateItemWithoutAvailable() throws Exception {
+        ItemDtoRequest createItemDto = ItemDtoRequest.builder()
+                .name("name")
+                .description("description")
+                .build();
 
+        mvc.perform(post("/items")
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(createItemDto))
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isInternalServerError());
+
+        verify(itemClient, never()).addNewItem(anyLong(), any());
+    }
+
+    @Test
+    void testReturnBadRequestIfTryAddCommentWithoutText() throws Exception {
+        CommentDtoRequest createCommentDto = CommentDtoRequest.builder()
+                .text(null)
+                .build();
+
+        mvc.perform(post("/items/{itemId}/comment", 1)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(createCommentDto))
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isInternalServerError());
+
+        verify(itemClient, never()).saveComment(anyLong(), any(), anyLong());
+    }
 }
