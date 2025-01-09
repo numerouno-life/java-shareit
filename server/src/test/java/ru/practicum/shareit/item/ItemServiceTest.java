@@ -280,7 +280,7 @@ public class ItemServiceTest {
 
         assertEquals("Имя вещи не может быть пустым", exception.getMessage());
     }
-    
+
     @Test
     void addNewItem_ShouldThrowValidationException_WhenNameIsNull() {
         itemDtoIn.setName(null);
