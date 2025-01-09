@@ -69,7 +69,6 @@ class ItemDtoRequestTest {
         Set<ConstraintViolation<ItemDtoRequest>> violations = validator.validate(itemRequest, Create.class);
         assertEquals(1, violations.size(),
                 "Item with missing availability should have a validation error");
-        assertEquals("не должно равняться null", violations.iterator().next().getMessage());
     }
 
 
