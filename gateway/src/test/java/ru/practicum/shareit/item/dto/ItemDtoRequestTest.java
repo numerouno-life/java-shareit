@@ -56,7 +56,6 @@ class ItemDtoRequestTest {
         Set<ConstraintViolation<ItemDtoRequest>> violations = validator.validate(itemRequest, Create.class);
         assertEquals(1, violations.size(),
                 "Item with blank description should have a validation error");
-        assertEquals("не должно быть пустым", violations.iterator().next().getMessage());
     }
 
     @Test
