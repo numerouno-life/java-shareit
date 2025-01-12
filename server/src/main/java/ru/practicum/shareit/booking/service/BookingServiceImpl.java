@@ -36,15 +36,11 @@ public class BookingServiceImpl implements BookingService {
     @Transactional
     public BookingDtoOut addNewBooking(Long userId, BookingDtoIn bookingDtoIn) {
         log.info("Добавление нового бронирования");
-        if (bookingDtoIn.getStart() == bookingDtoIn.getEnd()) {
-            throw new ValidationException("Дата начала и конца бронирования должны быть разными");
-        }
         User user = findUserById(userId);
         Item item = findItemById(bookingDtoIn.getItemId());
         if (!item.getAvailable()) {
             throw new ValidationException("Вещь не доступна для бронированя");
         }
-
         return BookingMapper.toBookingDtoOut(bookingRepository.save(
                 BookingMapper.toBooking(bookingDtoIn, user, item, Booking.BookingStatus.WAITING)));
     }

@@ -41,9 +41,6 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto saveUser(UserDto userDto) {
         log.info("Сохранение нового пользователя {}", userDto);
-        if (!userDto.getEmail().matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$"))
-            throw new IllegalArgumentException("Неверный формат e-mail");
-
         User user = userRepository.save(userMapper.toUser(userDto));
         return userMapper.toUserDto(user);
     }

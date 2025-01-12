@@ -193,7 +193,7 @@ class ItemRequestServiceTest {
     }
 
     private void mockItemRepositoryFindAllByRequestId() {
-        when(itemRepository.findAllByRequestId(any(Long.class))).thenReturn(List.of(
+        when(itemRepository.findAllByRequestIds(anyList())).thenReturn(List.of(
                 Item.builder()
                         .id(101L)
                         .name("Test Item")

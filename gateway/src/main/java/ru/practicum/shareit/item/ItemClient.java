@@ -52,6 +52,9 @@ public class ItemClient extends BaseClient {
     }
 
     public ResponseEntity<Object> searchItemByText(String text) {
+        if (text == null || text.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body("Текст не должен быть пустым");
+        }
         return get("/search", null, Map.of("text", text));
     }
 

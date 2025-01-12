@@ -4,16 +4,20 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 import ru.practicum.shareit.booking.dto.BookItemRequestDto;
 import ru.practicum.shareit.booking.dto.State;
+import ru.practicum.shareit.exception.ValidationException;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.function.Supplier;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
@@ -149,21 +153,51 @@ class BookingClientTest {
     @Test
     void shouldAddNewBooking() {
         long userId = 1L;
-        BookItemRequestDto bookItemRequestDto = new BookItemRequestDto();
+        BookItemRequestDto bookItemRequestDto = BookItemRequestDto.builder()
+                .start(LocalDateTime.now().minusDays(2))
+                .end(LocalDateTime.now().minusDays(1))
+                .build();
 
         ResponseEntity<Object> expectedResponse = ResponseEntity.ok("Success");
 
         when(restTemplate.exchange(
-                anyString(),
+                eq(""),
                 eq(HttpMethod.POST),
-                any(),
+                any(HttpEntity.class),
                 eq(Object.class)
         )).thenReturn(expectedResponse);
+
 
         ResponseEntity<Object> response = bookingClient.addNewBooking(userId, bookItemRequestDto);
 
         assertEquals(expectedResponse, response);
-        verify(restTemplate, times(1)).exchange(anyString(),
-                eq(HttpMethod.POST), any(), eq(Object.class));
+        verify(restTemplate, times(1)).exchange(
+                eq(""),
+                eq(HttpMethod.POST),
+                any(HttpEntity.class),
+                eq(Object.class)
+        );
+    }
+
+    @Test
+    void shouldThrowValidationExceptionWhenStartEqualsEnd() {
+        long userId = 1L;
+        BookItemRequestDto bookItemRequestDto = mock(BookItemRequestDto.class);
+        LocalDateTime now = LocalDateTime.now();
+        when(bookItemRequestDto.getStart()).thenReturn(now);
+        when(bookItemRequestDto.getEnd()).thenReturn(now);
+
+        ValidationException exception = assertThrows(ValidationException.class, () -> {
+            bookingClient.addNewBooking(userId, bookItemRequestDto);
+        });
+
+        assertEquals("Дата начала и конца бронирования должны быть разными", exception.getMessage());
+
+        verify(restTemplate, never()).exchange(
+                anyString(),
+                any(HttpMethod.class),
+                any(),
+                any(Class.class)
+        );
     }
 }

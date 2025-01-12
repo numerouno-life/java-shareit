@@ -130,9 +130,6 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public List<ItemDtoOut> searchItemByText(String text) {
         log.info("Поиск вещей по тексту {}", text);
-        if (text.trim().isEmpty()) {
-            return Collections.emptyList();
-        }
         return itemRepository.search(text).stream()
                 .map(itemMapper::toItemDtoOut)
                 .toList();

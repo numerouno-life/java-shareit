@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.dto.ItemDtoOut;
 import ru.practicum.shareit.item.mapper.ItemMapper;
+import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.request.dto.ItemRequestDtoIn;
 import ru.practicum.shareit.request.dto.ItemRequestDtoOut;
@@ -21,6 +22,8 @@ import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -82,15 +85,24 @@ public class ItemRequestServiceImpl implements ItemRequestService {
 
     private List<ItemRequestDtoOut> addItems(List<ItemRequest> requests) {
         log.debug("Добавление вещей {}", requests);
+        List<Long> requestIds = requests.stream()
+                .map(ItemRequest::getId)
+                .toList();
+        List<Item> items = itemRepository.findAllByRequestIds(requestIds);
+        log.debug("Найдено {} вещей для запросов", items.size());
+        Map<Long, List<Item>> itemsByRequestId = items.stream()
+                .collect(Collectors.groupingBy(item -> item.getRequest().getId()));
         return requests.stream()
                 .map(request -> {
-                    ItemRequestDtoOut requestDtoOut = itemRequestMapper.toRequestDtoOut(request);
-                    List<ItemDtoOut> items = itemRepository.findAllByRequestId(request.getId()).stream()
+                    ItemRequestDtoOut itemRequestDtoOut = itemRequestMapper.toRequestDtoOut(request);
+                    List<ItemDtoOut> itemDtoOuts = itemsByRequestId.getOrDefault(
+                                    request.getId(), List.of()).stream()
                             .map(itemMapper::toItemDtoOut)
                             .toList();
-                    requestDtoOut.setItems(items);
-                    return requestDtoOut;
+                    itemRequestDtoOut.setItems(itemDtoOuts);
+                    return itemRequestDtoOut;
                 })
                 .toList();
+
     }
 }

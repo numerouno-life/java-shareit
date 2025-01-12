@@ -18,6 +18,9 @@ import ru.practicum.shareit.item.dto.ItemDtoRequest;
 import java.util.function.Supplier;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 class ItemClientTest {
@@ -31,7 +34,7 @@ class ItemClientTest {
     void setUp() {
         RestTemplateBuilder builder = Mockito.mock(RestTemplateBuilder.class);
 
-        Mockito.when(builder.uriTemplateHandler(Mockito.any()))
+        Mockito.when(builder.uriTemplateHandler(any()))
                 .thenReturn(builder);
         Mockito.when(builder.requestFactory(Mockito.<Supplier<ClientHttpRequestFactory>>any()))
                 .thenReturn(builder);
@@ -49,19 +52,19 @@ class ItemClientTest {
         ResponseEntity<Object> expectedResponse = ResponseEntity.ok().build();
 
         Mockito.when(restTemplate.exchange(
-                Mockito.anyString(),
+                anyString(),
                 Mockito.eq(HttpMethod.POST),
-                Mockito.any(),
+                any(),
                 Mockito.eq(Object.class)
         )).thenReturn(expectedResponse);
 
         ResponseEntity<Object> response = itemClient.addNewItem(userId, request);
 
         assertEquals(expectedResponse, response);
-        Mockito.verify(restTemplate, Mockito.times(1)).exchange(
-                Mockito.anyString(),
+        verify(restTemplate, Mockito.times(1)).exchange(
+                anyString(),
                 Mockito.eq(HttpMethod.POST),
-                Mockito.any(),
+                any(),
                 Mockito.eq(Object.class)
         );
     }
@@ -73,19 +76,19 @@ class ItemClientTest {
         ResponseEntity<Object> expectedResponse = ResponseEntity.ok().build();
 
         Mockito.when(restTemplate.exchange(
-                Mockito.anyString(),
+                anyString(),
                 Mockito.eq(HttpMethod.GET),
-                Mockito.any(),
+                any(),
                 Mockito.eq(Object.class)
         )).thenReturn(expectedResponse);
 
         ResponseEntity<Object> response = itemClient.getItemById(itemId, userId);
 
         assertEquals(expectedResponse, response);
-        Mockito.verify(restTemplate, Mockito.times(1)).exchange(
-                Mockito.anyString(),
+        verify(restTemplate, Mockito.times(1)).exchange(
+                anyString(),
                 Mockito.eq(HttpMethod.GET),
-                Mockito.any(),
+                any(),
                 Mockito.eq(Object.class)
         );
     }
@@ -95,9 +98,9 @@ class ItemClientTest {
         HttpStatusCodeException exception = Mockito.mock(HttpStatusCodeException.class);
         Mockito.when(exception.getStatusCode()).thenReturn(HttpStatus.BAD_REQUEST);
         Mockito.when(restTemplate.exchange(
-                Mockito.anyString(),
+                anyString(),
                 Mockito.eq(HttpMethod.GET),
-                Mockito.any(),
+                any(),
                 Mockito.eq(Object.class)
         )).thenThrow(exception);
 
@@ -116,17 +119,17 @@ class ItemClientTest {
         Mockito.when(restTemplate.exchange(
                 Mockito.eq("/" + itemId),
                 Mockito.eq(HttpMethod.PATCH),
-                Mockito.any(),
+                any(),
                 Mockito.eq(Object.class)
         )).thenReturn(expectedResponse);
 
         ResponseEntity<Object> response = itemClient.updateItem(userId, itemId, request);
 
         assertEquals(expectedResponse, response);
-        Mockito.verify(restTemplate, Mockito.times(1)).exchange(
+        verify(restTemplate, Mockito.times(1)).exchange(
                 Mockito.eq("/" + itemId),
                 Mockito.eq(HttpMethod.PATCH),
-                Mockito.any(),
+                any(),
                 Mockito.eq(Object.class)
         );
     }
@@ -137,20 +140,35 @@ class ItemClientTest {
         ResponseEntity<Object> expectedResponse = ResponseEntity.ok().build();
 
         Mockito.when(restTemplate.exchange(
-                Mockito.anyString(),
+                anyString(),
                 Mockito.eq(HttpMethod.GET),
-                Mockito.any(),
+                any(),
                 Mockito.eq(Object.class)
         )).thenReturn(expectedResponse);
 
         ResponseEntity<Object> response = itemClient.getOwnerItems(userId);
 
         assertEquals(expectedResponse, response);
-        Mockito.verify(restTemplate, Mockito.times(1)).exchange(
-                Mockito.anyString(),
+        verify(restTemplate, Mockito.times(1)).exchange(
+                anyString(),
                 Mockito.eq(HttpMethod.GET),
-                Mockito.any(),
+                any(),
                 Mockito.eq(Object.class)
+        );
+    }
+
+    @Test
+    void shouldThrowBadRequestExceptionWhenTextIsEmpty() {
+        String text = "";
+        ResponseEntity<Object> response = itemClient.searchItemByText(text);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals("Текст не должен быть пустым", response.getBody());
+        verify(restTemplate, never()).exchange(
+                anyString(),
+                any(HttpMethod.class),
+                any(),
+                any(Class.class),
+                anyMap()
         );
     }
 

@@ -41,6 +41,8 @@ public class UserClient extends BaseClient {
     }
 
     public ResponseEntity<Object> saveUser(UserDtoRequest userDtoRequest) {
+        if (!userDtoRequest.getEmail().matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$"))
+            throw new IllegalArgumentException("Неверный формат e-mail");
         return post("", userDtoRequest);
     }
 

@@ -10,6 +10,7 @@ import org.springframework.web.util.DefaultUriBuilderFactory;
 import ru.practicum.shareit.booking.dto.BookItemRequestDto;
 import ru.practicum.shareit.booking.dto.State;
 import ru.practicum.shareit.client.BaseClient;
+import ru.practicum.shareit.exception.ValidationException;
 
 import java.util.Map;
 
@@ -41,6 +42,9 @@ public class BookingClient extends BaseClient {
     }
 
     public ResponseEntity<Object> addNewBooking(long userId, BookItemRequestDto bookItemRequestDto) {
+        if (bookItemRequestDto.getStart() == bookItemRequestDto.getEnd()) {
+            throw new ValidationException("Дата начала и конца бронирования должны быть разными");
+        }
         return post("", userId, bookItemRequestDto);
     }
 

@@ -94,22 +94,6 @@ public class UserServiceTest {
         verify(userRepository, times(1)).save(any(User.class));
     }
 
-    @Test
-    void saveUser_invalidEmail_throwsIllegalArgumentException() {
-        UserDto invalidUserDto = UserDto.builder()
-                .id(2L)
-                .name("Invalid User")
-                .email("invalid-email")
-                .build();
-
-        IllegalArgumentException exception = Assertions.assertThrows(
-                IllegalArgumentException.class,
-                () -> userService.saveUser(invalidUserDto)
-        );
-
-        Assertions.assertEquals("Неверный формат e-mail", exception.getMessage());
-        verify(userRepository, never()).save(any(User.class));
-    }
 
     @Test
     void update_existingUser_updatesFields() {
