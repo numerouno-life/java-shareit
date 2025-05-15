@@ -1,7 +1,7 @@
 # ShareIt: Сервис аренды вещей  
 
 **Стек:**  
-- Java 21, Spring Boot (Web, Data JPA, Validation)  
+- Java 21, Spring Boot (Web, Data JPA, Validation), Docker, Hibernate  
 - Базы данных: PostgreSQL, H2 (тесты)  
 - Тестирование: **JUnit 5**, **Mockito**, SpringBootTest  
 - API: REST, Swagger UI  
